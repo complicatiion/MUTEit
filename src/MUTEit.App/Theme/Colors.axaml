@@ -1,0 +1,72 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    MUTEit design tokens (see docs/nfo/DESIGN.md). Dark graphite is the default, light is optional.
+    The accent tokens (BrushAccent, BrushAccentHover, BrushAccentPressed, BrushAccentSoft, BrushOnAccent) are set from
+    code (ThemeManager): Teal #4FD1C5 (dark) / #0F766E (light), or the Windows accent unless it is red-like.
+    The values below are the Teal defaults. Red is reserved for "muted".
+  -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="BrushBgApp" Color="#1A1D23" />
+      <SolidColorBrush x:Key="BrushBgSidebar" Color="#15181D" />
+      <SolidColorBrush x:Key="BrushSurfaceCard" Color="#22262E" />
+      <SolidColorBrush x:Key="BrushSurfaceRaised" Color="#2A2F38" />
+      <SolidColorBrush x:Key="BrushSurfaceHover" Color="#343A45" />
+      <SolidColorBrush x:Key="BrushBorder" Color="#343A45" />
+      <SolidColorBrush x:Key="BrushAccent" Color="#4FD1C5" />
+      <SolidColorBrush x:Key="BrushAccentHover" Color="#6EDCD2" />
+      <SolidColorBrush x:Key="BrushAccentPressed" Color="#3BB8AC" />
+      <SolidColorBrush x:Key="BrushAccentSoft" Color="#1F3634" />
+      <SolidColorBrush x:Key="BrushOnAccent" Color="#0F1A1A" />
+      <SolidColorBrush x:Key="BrushHighlight" Color="#ECEFF4" />
+      <SolidColorBrush x:Key="BrushTextPrimary" Color="#ECEFF4" />
+      <SolidColorBrush x:Key="BrushTextSecondary" Color="#A7B0BE" />
+      <SolidColorBrush x:Key="BrushTextDisabled" Color="#6B7383" />
+      <SolidColorBrush x:Key="BrushMuted" Color="#E5484D" />
+      <SolidColorBrush x:Key="BrushMutedText" Color="#F87171" />
+      <SolidColorBrush x:Key="BrushMutedSoft" Color="#3A1F22" />
+      <SolidColorBrush x:Key="BrushDanger" Color="#F87171" />
+      <SolidColorBrush x:Key="BrushDangerSoft" Color="#3A1F22" />
+      <SolidColorBrush x:Key="BrushDangerHover" Color="#4A262A" />
+      <SolidColorBrush x:Key="BrushWarning" Color="#F2C46D" />
+      <SolidColorBrush x:Key="BrushWarningSoft" Color="#3A3428" />
+      <SolidColorBrush x:Key="BrushInfo" Color="#8FB8E8" />
+      <SolidColorBrush x:Key="BrushInfoSoft" Color="#22303F" />
+      <SolidColorBrush x:Key="BrushHero" Color="#22262E" />
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="BrushBgApp" Color="#F3F4F6" />
+      <SolidColorBrush x:Key="BrushBgSidebar" Color="#EBEDF0" />
+      <SolidColorBrush x:Key="BrushSurfaceCard" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="BrushSurfaceRaised" Color="#F7F8FA" />
+      <SolidColorBrush x:Key="BrushSurfaceHover" Color="#E4E7EB" />
+      <SolidColorBrush x:Key="BrushBorder" Color="#D5D9E0" />
+      <SolidColorBrush x:Key="BrushAccent" Color="#0F766E" />
+      <SolidColorBrush x:Key="BrushAccentHover" Color="#0D655F" />
+      <SolidColorBrush x:Key="BrushAccentPressed" Color="#0B5550" />
+      <SolidColorBrush x:Key="BrushAccentSoft" Color="#DCEDEC" />
+      <SolidColorBrush x:Key="BrushOnAccent" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="BrushHighlight" Color="#1A1D23" />
+      <SolidColorBrush x:Key="BrushTextPrimary" Color="#1A1D23" />
+      <SolidColorBrush x:Key="BrushTextSecondary" Color="#4B5563" />
+      <SolidColorBrush x:Key="BrushTextDisabled" Color="#9AA1AC" />
+      <SolidColorBrush x:Key="BrushMuted" Color="#E5484D" />
+      <SolidColorBrush x:Key="BrushMutedText" Color="#B4232A" />
+      <SolidColorBrush x:Key="BrushMutedSoft" Color="#FDECEC" />
+      <SolidColorBrush x:Key="BrushDanger" Color="#B4232A" />
+      <SolidColorBrush x:Key="BrushDangerSoft" Color="#FDECEC" />
+      <SolidColorBrush x:Key="BrushDangerHover" Color="#F9DADA" />
+      <SolidColorBrush x:Key="BrushWarning" Color="#8A5A00" />
+      <SolidColorBrush x:Key="BrushWarningSoft" Color="#FFF4DB" />
+      <SolidColorBrush x:Key="BrushInfo" Color="#1F5FAD" />
+      <SolidColorBrush x:Key="BrushInfoSoft" Color="#E6F0FB" />
+      <SolidColorBrush x:Key="BrushHero" Color="#FFFFFF" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas, Courier New</FontFamily>
+
+</ResourceDictionary>

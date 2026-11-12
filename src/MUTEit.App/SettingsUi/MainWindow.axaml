@@ -1,0 +1,796 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="using:MUTEit.App.SettingsUi"
+        x:Class="MUTEit.App.SettingsUi.MainWindow"
+        x:DataType="ui:SettingsViewModel"
+        Title="MUTEit"
+        Icon="avares://MUTEit/Assets/muteit.ico"
+        Width="940" Height="780" MinWidth="800" MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="PreferSystemChrome"
+        ExtendClientAreaTitleBarHeightHint="44">
+
+  <Grid ColumnDefinitions="236,*">
+
+    <!-- ============================================================ Sidebar -->
+    <Border Background="{DynamicResource BrushBgSidebar}" BorderBrush="{DynamicResource BrushBorder}" BorderThickness="0,0,1,0">
+      <DockPanel Margin="14,0,14,16">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="8,22,0,28"
+                    Background="Transparent" PointerPressed="OnDragAreaPressed">
+          <!-- Logo in the accent colour (mask), follows Teal / Windows accent -->
+          <Border Width="38" Height="38" Background="{DynamicResource BrushAccent}">
+            <Border.OpacityMask>
+              <ImageBrush Source="avares://MUTEit/Assets/logo-mask.png" Stretch="Uniform" />
+            </Border.OpacityMask>
+          </Border>
+          <TextBlock Text="MUTEit" FontSize="19" FontWeight="SemiBold" TextWrapping="NoWrap" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <Border DockPanel.Dock="Bottom" Classes="pill" HorizontalAlignment="Left" Margin="8,0">
+          <TextBlock Text="{Binding VersionPill}" />
+        </Border>
+
+        <StackPanel Spacing="4">
+          <RadioButton Classes="nav" GroupName="nav" IsChecked="{Binding IsMicrophonePage, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconMic}" />
+              <TextBlock Text="{Binding [NavMicrophone], Source={x:Static ui:Tr.I}}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Classes="nav" GroupName="nav" IsChecked="{Binding IsDisplayPage, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconOverlay}" />
+              <TextBlock Text="{Binding [NavDisplay], Source={x:Static ui:Tr.I}}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Classes="nav" GroupName="nav" IsChecked="{Binding IsSoundsPage, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconVolume}" />
+              <TextBlock Text="{Binding [NavSounds], Source={x:Static ui:Tr.I}}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Classes="nav" GroupName="nav" IsChecked="{Binding IsHotkeyPage, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconKeyboard}" />
+              <TextBlock Text="{Binding [NavHotkey], Source={x:Static ui:Tr.I}}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Classes="nav" GroupName="nav" IsChecked="{Binding IsGeneralPage, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconGeneral}" />
+              <TextBlock Text="{Binding [NavGeneral], Source={x:Static ui:Tr.I}}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+          <Border Classes="divider" Margin="8,10" />
+          <RadioButton Classes="nav" GroupName="nav" IsChecked="{Binding IsAboutPage, Mode=TwoWay}">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+              <PathIcon Data="{StaticResource IconAbout}" />
+              <TextBlock Text="{Binding [NavAbout], Source={x:Static ui:Tr.I}}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- ============================================================ Content -->
+    <Grid Grid.Column="1" RowDefinitions="44,Auto,*">
+
+      <!-- Title bar area (caption buttons are drawn by Windows on the right) -->
+      <Border Grid.Row="0" Background="Transparent" PointerPressed="OnDragAreaPressed" />
+
+      <StackPanel Grid.Row="1" Margin="36,4,36,18" Spacing="4">
+        <TextBlock Classes="h1" Text="{Binding PageTitle}" />
+      </StackPanel>
+
+      <ScrollViewer x:Name="PageScroll" Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+        <Panel Margin="36,0,36,28">
+
+          <!-- ======================================================== Microphone -->
+          <StackPanel x:Name="PageMicrophone" Classes="page" Spacing="16" IsVisible="{Binding IsMicrophonePage}">
+
+            <Border Classes="notice" IsVisible="{Binding !TrayRunning}">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconAlert}" Margin="0,0,12,0" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding [TrayNotRunning], Source={x:Static ui:Tr.I}}" />
+                <Button Grid.Column="2" Classes="primary" Margin="12,0,0,0" Command="{Binding StartTrayCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconPlay}" />
+                    <TextBlock Text="{Binding [BtnStartTray], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <!-- State: disc, headline, device · mode, mute / unmute -->
+            <Border Classes="hero">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Classes="state" Classes.muted="{Binding IsMuted}" Classes.unavailable="{Binding IsUnavailable}">
+                  <Panel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconMic}" IsVisible="{Binding IsLive}" />
+                    <PathIcon Data="{StaticResource IconMicOff}" IsVisible="{Binding !IsLive}" />
+                  </Panel>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="22,0,16,0" VerticalAlignment="Center" Spacing="6">
+                  <TextBlock Classes="hero" Classes.muted="{Binding IsMuted}" Text="{Binding StateHeadline}" />
+                  <TextBlock Classes="muted" Text="{Binding StateDetail}" />
+                </StackPanel>
+                <Button Grid.Column="2" Classes="primary action" Classes.mute="{Binding IsLive}" VerticalAlignment="Center"
+                        Command="{Binding ToggleMicCommand}" IsEnabled="{Binding CanToggle}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconMicOff}" IsVisible="{Binding IsLive}" />
+                    <PathIcon Data="{StaticResource IconMic}" IsVisible="{Binding !IsLive}" />
+                    <TextBlock Text="{Binding ToggleText}" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <!-- Active microphone: one line, wraps only if the name does not fit -->
+            <Border Classes="card" Padding="20,14">
+              <Grid ColumnDefinitions="Auto,Auto,*">
+                <PathIcon Data="{StaticResource IconMicVariant}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center" Margin="0,0,12,0" Text="{Binding [ActiveMic], Source={x:Static ui:Tr.I}}" />
+                <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding ActiveMicrophone}" />
+              </Grid>
+            </Border>
+
+            <!-- Device and level -->
+            <Border Classes="card">
+              <StackPanel Spacing="14">
+                <TextBlock Classes="section" Margin="0" Text="{Binding [SecMicrophone], Source={x:Static ui:Tr.I}}" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconMicVariant}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding MicOptions}" SelectedItem="{Binding SelectedMicrophone, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="ui:DeviceOption">
+                        <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button Grid.Column="2" Margin="10,0,0,0" Command="{Binding RefreshDevicesCommand}" ToolTip.Tip="{Binding [BtnRefreshDevices], Source={x:Static ui:Tr.I}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconRefresh}" />
+                      <TextBlock Text="{Binding [BtnRefresh], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconTune}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" Text="{Binding [MicLevel], Source={x:Static ui:Tr.I}}" />
+                  <Slider Grid.Column="2" Minimum="0" Maximum="100" Value="{Binding MicVolume, Mode=TwoWay}" IsEnabled="{Binding CanSetVolume}" />
+                  <TextBlock Grid.Column="3" MinWidth="52" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding MicVolumeText}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Start and exit -->
+            <Border Classes="card">
+              <StackPanel Spacing="14">
+                <TextBlock Classes="section" Margin="0" Text="{Binding [SecStartExit], Source={x:Static ui:Tr.I}}" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconRocket}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding [InitialState], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2" VerticalAlignment="Center" ItemsSource="{Binding InitialStateNames}" SelectedIndex="{Binding InitialStateIndex, Mode=TwoWay}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconExit}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center" Margin="0,0,16,0">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding [ExitState], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2" VerticalAlignment="Center" ItemsSource="{Binding ExitStateNames}" SelectedIndex="{Binding ExitStateIndex, Mode=TwoWay}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding Notices}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <StackPanel Spacing="10" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="ui:Notice">
+                  <Border Classes="notice" Classes.info="{Binding !IsWarning}">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <PathIcon Data="{StaticResource IconAlert}" Margin="0,0,12,0" VerticalAlignment="Top" />
+                      <TextBlock Grid.Column="1" Text="{Binding Text}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+          <!-- ======================================================== Hotkey -->
+          <StackPanel x:Name="PageHotkey" Classes="page" Spacing="18" IsVisible="{Binding IsHotkeyPage}">
+            <StackPanel>
+              <TextBlock Classes="section" Text="{Binding [SecMode], Source={x:Static ui:Tr.I}}" />
+              <UniformGrid Columns="3" Margin="0,0,-12,0">
+                <RadioButton Classes="choice" GroupName="mode" Margin="0,0,12,0" IsChecked="{Binding IsModeToggle, Mode=TwoWay}">
+                  <StackPanel Spacing="8">
+                    <PathIcon Data="{StaticResource IconSwap}" HorizontalAlignment="Left" />
+                    <TextBlock Classes="h2" Text="{Binding [ModeToggle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [ModeToggleDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                </RadioButton>
+                <RadioButton Classes="choice" GroupName="mode" Margin="0,0,12,0" IsChecked="{Binding IsModePtt, Mode=TwoWay}">
+                  <StackPanel Spacing="8">
+                    <PathIcon Data="{StaticResource IconVoice}" HorizontalAlignment="Left" />
+                    <TextBlock Classes="h2" Text="{Binding [ModePtt], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [ModePttDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                </RadioButton>
+                <RadioButton Classes="choice" GroupName="mode" Margin="0,0,12,0" IsChecked="{Binding IsModePtm, Mode=TwoWay}">
+                  <StackPanel Spacing="8">
+                    <PathIcon Data="{StaticResource IconHand}" HorizontalAlignment="Left" />
+                    <TextBlock Classes="h2" Text="{Binding [ModePtm], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [ModePtmDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                </RadioButton>
+              </UniformGrid>
+            </StackPanel>
+
+            <!-- Hotkey box -->
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="section" Margin="0" Text="{Binding [SecHotkey], Source={x:Static ui:Tr.I}}" />
+                <Button Classes="recorder" Classes.recording="{Binding IsRecording}" Command="{Binding RecordHotkeyCommand}">
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconKeyboard}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" Classes="keys" VerticalAlignment="Center" Text="{Binding HotkeyText}" />
+                    <TextBlock Grid.Column="2" Classes="muted small" VerticalAlignment="Center" Margin="12,0,0,0" Text="{Binding RecorderHint}" />
+                  </Grid>
+                </Button>
+                <Grid ColumnDefinitions="*,Auto">
+                  <Grid ColumnDefinitions="Auto,*" Margin="0,0,16,0">
+                    <PathIcon Classes="info" Data="{StaticResource IconInfoCircle}" />
+                    <TextBlock Grid.Column="1" Classes="muted small" Text="{Binding [RecorderInfo], Source={x:Static ui:Tr.I}}" />
+                  </Grid>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Top">
+                    <Button Classes="danger" Command="{Binding ClearHotkeyCommand}" IsEnabled="{Binding HasHotkey}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconDelete}" />
+                        <TextBlock Text="{Binding [BtnRemoveHotkey], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Command="{Binding DefaultHotkeyCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconReset}" />
+                        <TextBlock Text="{Binding [BtnDefaultHotkey], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Options -->
+            <Border Classes="card">
+              <StackPanel Spacing="16">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconGamepad}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [IgnoreModTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [IgnoreModDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding IgnoreModifiers, Mode=TwoWay}" />
+                </Grid>
+                <Border Classes="divider" Margin="0" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconShieldKey}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [SuppressTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [SuppressDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SuppressHotkey, Mode=TwoWay}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+          </StackPanel>
+
+          <!-- ======================================================== Sounds -->
+          <StackPanel x:Name="PageSounds" Classes="page" Spacing="16" IsVisible="{Binding IsSoundsPage}">
+            <Border Classes="card">
+              <StackPanel Spacing="16">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconMicOff}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <TextBlock Grid.Column="1" Classes="h2" VerticalAlignment="Center" Text="{Binding [SoundOnMute], Source={x:Static ui:Tr.I}}" />
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SoundOnMute, Mode=TwoWay}" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconMic}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <TextBlock Grid.Column="1" Classes="h2" VerticalAlignment="Center" Text="{Binding [SoundOnUnmute], Source={x:Static ui:Tr.I}}" />
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SoundOnUnmute, Mode=TwoWay}" />
+                </Grid>
+                <Border Classes="divider" Margin="0" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconVoice}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [SoundPushTitle], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SoundInPushModes, Mode=TwoWay}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Output device, volume, test -->
+            <Border Classes="card">
+              <StackPanel Spacing="14">
+                <TextBlock Classes="section" Margin="0" Text="{Binding [SecOutput], Source={x:Static ui:Tr.I}}" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconSpeaker}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding OutputOptions}" SelectedItem="{Binding SelectedOutput, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="ui:DeviceOption">
+                        <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button Grid.Column="2" Margin="10,0,0,0" Command="{Binding RefreshDevicesCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconRefresh}" />
+                      <TextBlock Text="{Binding [BtnRefresh], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconVolume}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" Text="{Binding [SoundVolume], Source={x:Static ui:Tr.I}}" />
+                  <Slider Grid.Column="2" Minimum="0" Maximum="100" Value="{Binding SoundVolume, Mode=TwoWay}" />
+                  <TextBlock Grid.Column="3" MinWidth="52" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding SoundVolumeText}" />
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                  <Button Command="{Binding TestUnmuteSoundCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconPlay}" />
+                      <TextBlock Text="{Binding [BtnTestUnmute], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                  <Button Command="{Binding TestMuteSoundCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconPlay}" />
+                      <TextBlock Text="{Binding [BtnTestMute], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <!-- Sound per state: built-in, Windows sound or own WAV -->
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <TextBlock Classes="section" Margin="0" Text="{Binding [SecCustomSounds], Source={x:Static ui:Tr.I}}" />
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconFileMusic}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="70" Margin="0,0,14,0" Text="{Binding [SoundMuteFile], Source={x:Static ui:Tr.I}}" />
+                  <ComboBox Grid.Column="2" HorizontalAlignment="Stretch" ItemsSource="{Binding MuteSoundOptions}" SelectedItem="{Binding SelectedMuteSound, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="ui:SoundOption">
+                        <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button Grid.Column="3" Margin="10,0,0,0" Command="{Binding LoadMuteSoundCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconFolderOpen}" />
+                      <TextBlock Text="{Binding [BtnLoadFile], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconFileMusic}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" MinWidth="70" Margin="0,0,14,0" Text="{Binding [SoundUnmuteFile], Source={x:Static ui:Tr.I}}" />
+                  <ComboBox Grid.Column="2" HorizontalAlignment="Stretch" ItemsSource="{Binding UnmuteSoundOptions}" SelectedItem="{Binding SelectedUnmuteSound, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="ui:SoundOption">
+                        <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <Button Grid.Column="3" Margin="10,0,0,0" Command="{Binding LoadUnmuteSoundCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconFolderOpen}" />
+                      <TextBlock Text="{Binding [BtnLoadFile], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ======================================================== Display: overlay, taskbar, icons -->
+          <StackPanel x:Name="PageDisplay" Classes="page" Spacing="16" IsVisible="{Binding IsDisplayPage}">
+            <Border Classes="card">
+              <StackPanel Spacing="14">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconOverlay}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [OverlayTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [OverlayDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding OverlayEnabled, Mode=TwoWay}" />
+                </Grid>
+                <StackPanel Spacing="12" IsEnabled="{Binding OverlayEnabled}">
+                  <Border Classes="divider" Margin="0" />
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconEye}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding [OverlayShow], Source={x:Static ui:Tr.I}}" />
+                    <ComboBox Grid.Column="2" ItemsSource="{Binding OverlayVisibilityNames}" SelectedIndex="{Binding OverlayVisibilityIndex, Mode=TwoWay}" />
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconMic}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding [OverlaySymbol], Source={x:Static ui:Tr.I}}" />
+                    <ComboBox Grid.Column="2" ItemsSource="{Binding OverlayStyleNames}" SelectedIndex="{Binding OverlayStyleIndex, Mode=TwoWay}" />
+                  </Grid>
+                  <!-- Position: screen + corner dots on a small display; dragging the overlay sets "free" -->
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconMonitor}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" VerticalAlignment="Top" />
+                    <StackPanel Grid.Column="1" Spacing="8" Margin="0,0,16,0">
+                      <TextBlock Text="{Binding [OverlayPosition], Source={x:Static ui:Tr.I}}" />
+                      <ComboBox HorizontalAlignment="Stretch" MinWidth="0" ItemsSource="{Binding ScreenOptions}" SelectedItem="{Binding SelectedScreen, Mode=TwoWay}">
+                        <ComboBox.ItemTemplate>
+                          <DataTemplate x:DataType="ui:DeviceOption">
+                            <TextBlock Text="{Binding Name}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                          </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                      </ComboBox>
+                      <Border Classes="pill" HorizontalAlignment="Left" IsVisible="{Binding IsAnchorFree}">
+                        <TextBlock Text="{Binding [AnchorFree], Source={x:Static ui:Tr.I}}" />
+                      </Border>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="0">
+                      <Border Classes="display">
+                        <Panel>
+                        <Button Classes="corner" Classes.selected="{Binding IsAnchorTopLeft}" HorizontalAlignment="Left" VerticalAlignment="Top"
+                                Command="{Binding SetAnchorCommand}" CommandParameter="TopLeft" ToolTip.Tip="{Binding [AnchorTopLeft], Source={x:Static ui:Tr.I}}" />
+                        <Button Classes="corner" Classes.selected="{Binding IsAnchorTopRight}" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Command="{Binding SetAnchorCommand}" CommandParameter="TopRight" ToolTip.Tip="{Binding [AnchorTopRight], Source={x:Static ui:Tr.I}}" />
+                        <Button Classes="corner" Classes.selected="{Binding IsAnchorBottomLeft}" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                                Command="{Binding SetAnchorCommand}" CommandParameter="BottomLeft" ToolTip.Tip="{Binding [AnchorBottomLeft], Source={x:Static ui:Tr.I}}" />
+                        <Button Classes="corner" Classes.selected="{Binding IsAnchorBottomRight}" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                Command="{Binding SetAnchorCommand}" CommandParameter="BottomRight" ToolTip.Tip="{Binding [AnchorBottomRight], Source={x:Static ui:Tr.I}}" />
+                        </Panel>
+                      </Border>
+                      <Border Classes="display-stand" />
+                    </StackPanel>
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconSize}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" MinWidth="110" Text="{Binding [OverlaySize], Source={x:Static ui:Tr.I}}" />
+                    <Slider Grid.Column="2" Minimum="{Binding OverlayMinSize}" Maximum="{Binding OverlayMaxSize}" Value="{Binding OverlaySize, Mode=TwoWay}" />
+                    <TextBlock Grid.Column="3" MinWidth="60" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding OverlaySizeText}" />
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconOpacity}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="0,0,16,0" MinWidth="110" Text="{Binding [OverlayOpacity], Source={x:Static ui:Tr.I}}" />
+                    <Slider Grid.Column="2" Minimum="{Binding OverlayMinOpacity}" Maximum="100" Value="{Binding OverlayOpacity, Mode=TwoWay}" />
+                    <TextBlock Grid.Column="3" MinWidth="60" TextAlignment="Right" VerticalAlignment="Center" FontWeight="SemiBold" Text="{Binding OverlayOpacityText}" />
+                  </Grid>
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconTap}" Width="20" Height="20" Foreground="{DynamicResource BrushAccent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding [OverlayClick], Source={x:Static ui:Tr.I}}" />
+                    <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding OverlayClickToggles, Mode=TwoWay}" />
+                  </Grid>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconTaskbar}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [TaskbarTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [TaskbarDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding TaskbarButton, Mode=TwoWay}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Own icons -->
+            <Border Classes="card">
+              <StackPanel Spacing="14">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Classes="section" Margin="0" VerticalAlignment="Center" Text="{Binding [SecIcons], Source={x:Static ui:Tr.I}}" />
+                  <Border Grid.Column="1" Classes="pill">
+                    <TextBlock Text="{Binding IconModeText}" />
+                  </Border>
+                </Grid>
+                <UniformGrid Columns="3" Margin="0,0,-12,0">
+                  <Border Classes="listrow" Margin="0,0,12,0" Padding="12">
+                    <StackPanel Spacing="10" HorizontalAlignment="Center">
+                      <Border Classes="preview" HorizontalAlignment="Center">
+                        <Image Source="{Binding GeneralPreview}" Stretch="Uniform" />
+                      </Border>
+                      <Button HorizontalAlignment="Center" Command="{Binding LoadGeneralIconCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <PathIcon Data="{StaticResource IconImage}" />
+                          <TextBlock Text="{Binding [BtnGeneralIcon], Source={x:Static ui:Tr.I}}" />
+                        </StackPanel>
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                  <Border Classes="listrow" Margin="0,0,12,0" Padding="12">
+                    <StackPanel Spacing="10" HorizontalAlignment="Center">
+                      <Border Classes="preview" HorizontalAlignment="Center">
+                        <Panel>
+                          <PathIcon Data="{StaticResource IconMicOff}" Width="24" Height="24" Foreground="{DynamicResource BrushTextDisabled}"
+                                    IsVisible="{Binding MutedPreview, Converter={x:Static ObjectConverters.IsNull}}" />
+                          <Image Source="{Binding MutedPreview}" Stretch="Uniform" />
+                        </Panel>
+                      </Border>
+                      <Button HorizontalAlignment="Center" Command="{Binding LoadMutedIconCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <PathIcon Data="{StaticResource IconImages}" />
+                          <TextBlock Text="{Binding [BtnMutedIcon], Source={x:Static ui:Tr.I}}" />
+                        </StackPanel>
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                  <Border Classes="listrow" Margin="0,0,12,0" Padding="12">
+                    <StackPanel Spacing="10" HorizontalAlignment="Center">
+                      <Border Classes="preview" HorizontalAlignment="Center">
+                        <Panel>
+                          <PathIcon Data="{StaticResource IconMic}" Width="24" Height="24" Foreground="{DynamicResource BrushTextDisabled}"
+                                    IsVisible="{Binding UnmutedPreview, Converter={x:Static ObjectConverters.IsNull}}" />
+                          <Image Source="{Binding UnmutedPreview}" Stretch="Uniform" />
+                        </Panel>
+                      </Border>
+                      <Button HorizontalAlignment="Center" Command="{Binding LoadUnmutedIconCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <PathIcon Data="{StaticResource IconImages}" />
+                          <TextBlock Text="{Binding [BtnUnmutedIcon], Source={x:Static ui:Tr.I}}" />
+                        </StackPanel>
+                      </Button>
+                    </StackPanel>
+                  </Border>
+                </UniformGrid>
+                <TextBlock Classes="small accent" Text="{Binding IconHint}"
+                           IsVisible="{Binding IconHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <Grid ColumnDefinitions="*,Auto">
+                  <Button Grid.Column="1" Classes="danger" Command="{Binding ResetIconsCommand}" IsEnabled="{Binding HasCustomIcons}" VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <PathIcon Data="{StaticResource IconReset}" />
+                      <TextBlock Text="{Binding [BtnResetIcons], Source={x:Static ui:Tr.I}}" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ======================================================== General -->
+          <StackPanel x:Name="PageGeneral" Classes="page" Spacing="16" IsVisible="{Binding IsGeneralPage}">
+            <Border Classes="card">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconRocket}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Classes="h2" Text="{Binding [AutostartTitle], Source={x:Static ui:Tr.I}}" />
+                </StackPanel>
+                <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding Autostart, Mode=TwoWay}" />
+              </Grid>
+            </Border>
+
+            <Border Classes="card">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconBell}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Classes="h2" Text="{Binding [NotifyTitle], Source={x:Static ui:Tr.I}}" />
+                  <TextBlock Classes="muted small" Text="{Binding [NotifyDesc], Source={x:Static ui:Tr.I}}" />
+                </StackPanel>
+                <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding Notifications, Mode=TwoWay}" />
+              </Grid>
+            </Border>
+
+            <Border Classes="card">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconTranslate}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                <TextBlock Grid.Column="1" Classes="h2" VerticalAlignment="Center" Text="{Binding [SecLanguage], Source={x:Static ui:Tr.I}}" />
+                <ComboBox Grid.Column="2" ItemsSource="{Binding Languages}" SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="ui:LanguageOption">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <!-- Flat 2D flag (UK / DE); "Automatic" shows a globe -->
+                        <Image Source="{Binding Flag}" Width="21" Height="14" VerticalAlignment="Center" IsVisible="{Binding HasFlag}" />
+                        <PathIcon Data="{StaticResource IconEarth}" Width="16" Height="16" Margin="2,0,3,0"
+                                  Foreground="{DynamicResource BrushAccent}" IsVisible="{Binding IsAuto}" />
+                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextWrapping="NoWrap" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </Grid>
+            </Border>
+
+            <!-- Appearance: theme, Mica, accent -->
+            <Border Classes="card">
+              <StackPanel Spacing="16">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconTheme}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [ThemeTitle], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ComboBox Grid.Column="2" VerticalAlignment="Center" ItemsSource="{Binding ThemeNames}" SelectedIndex="{Binding ThemeIndex, Mode=TwoWay}" />
+                </Grid>
+                <Border Classes="divider" Margin="0" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconBlur}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [MicaTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [MicaDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding Transparency, Mode=TwoWay}" IsEnabled="{Binding CanUseMica}" />
+                </Grid>
+                <Border Classes="divider" Margin="0" />
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconPalette}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [AccentTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [AccentDesc], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="small accent" Text="{Binding AccentHint}"
+                               IsVisible="{Binding AccentHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding UseWindowsAccent, Mode=TwoWay}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconFolderOpen}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                <StackPanel Grid.Column="1" Spacing="8" VerticalAlignment="Center" Margin="0,0,16,0">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Classes="h2" Text="{Binding [SettingsFile], Source={x:Static ui:Tr.I}}" />
+                    <Border Classes="pill" IsVisible="{Binding IsPortable}">
+                      <TextBlock Text="{Binding [PortableMode], Source={x:Static ui:Tr.I}}" />
+                    </Border>
+                  </StackPanel>
+                  <Border Classes="pill neutral" HorizontalAlignment="Left" ToolTip.Tip="{Binding SettingsFilePath}">
+                    <TextBlock Classes="mono" TextTrimming="CharacterEllipsis" Text="{Binding SettingsFilePath}" />
+                  </Border>
+                </StackPanel>
+                <Button Grid.Column="2" Classes="wide" Command="{Binding OpenDataFolderCommand}" VerticalAlignment="Center">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconFolderOpen}" />
+                    <TextBlock Text="{Binding [BtnOpenFolder], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+            </Border>
+
+            <!-- Update check (opt-in, GitHub releases) -->
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <PathIcon Data="{StaticResource IconUpdate}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [UpdTitle], Source={x:Static ui:Tr.I}}" />
+                    <TextBlock Classes="muted small" Text="{Binding [UpdDesc], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                  <ToggleSwitch Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding UpdateCheckEnabled, Mode=TwoWay}" />
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto">
+                  <Border Classes="pill neutral" Classes.ok="{Binding UpdateState, Converter={x:Static ui:PillConverters.IsOk}}"
+                          Classes.danger="{Binding UpdateState, Converter={x:Static ui:PillConverters.IsError}}"
+                          HorizontalAlignment="Left" VerticalAlignment="Center"
+                          IsVisible="{Binding UpdateStatusText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock Text="{Binding UpdateStatusText}" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Spacing="8">
+                    <Button Classes="primary wide" Command="{Binding OpenReleaseCommand}" IsVisible="{Binding UpdateAvailable}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconDownload}" />
+                        <TextBlock Text="{Binding [BtnOpenRelease], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Classes="wide" Command="{Binding CheckUpdateCommand}" IsEnabled="{Binding !UpdateBusy}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconRefresh}" />
+                        <TextBlock Text="{Binding [BtnCheckNow], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <!-- Export / import / reset -->
+            <Border Classes="card">
+              <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="Auto,*">
+                  <PathIcon Data="{StaticResource IconReset}" Width="22" Height="22" Foreground="{DynamicResource BrushAccent}" Margin="0,0,16,0" />
+                  <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Classes="h2" Text="{Binding [BackupTitle], Source={x:Static ui:Tr.I}}" />
+                  </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto">
+                  <Border Classes="pill neutral" Classes.ok="{Binding BackupState, Converter={x:Static ui:PillConverters.IsOk}}"
+                          Classes.danger="{Binding BackupState, Converter={x:Static ui:PillConverters.IsError}}"
+                          HorizontalAlignment="Left" VerticalAlignment="Center"
+                          IsVisible="{Binding BackupMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding BackupMessage}" />
+                  </Border>
+                  <!-- Reset (destructive) left, import / export (main action) right -->
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                    <Button Classes="danger" Command="{Binding ResetSettingsCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconReset}" />
+                        <TextBlock Text="{Binding [BtnReset], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ImportSettingsCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconImport}" />
+                        <TextBlock Text="{Binding [BtnImport], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                    <Button Classes="primary" Command="{Binding ExportSettingsCommand}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconExport}" />
+                        <TextBlock Text="{Binding [BtnExport], Source={x:Static ui:Tr.I}}" />
+                      </StackPanel>
+                    </Button>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ======================================================== About -->
+          <StackPanel x:Name="PageAbout" Classes="page" Spacing="16" IsVisible="{Binding IsAboutPage}">
+            <Border Classes="hero">
+              <Grid ColumnDefinitions="Auto,*">
+                <Border Width="96" Height="96" Background="{DynamicResource BrushAccent}" VerticalAlignment="Top">
+                  <Border.OpacityMask>
+                    <ImageBrush Source="avares://MUTEit/Assets/logo-mask.png" Stretch="Uniform" />
+                  </Border.OpacityMask>
+                </Border>
+                <StackPanel Grid.Column="1" Margin="24,0,0,0" Spacing="6">
+                  <TextBlock Text="MUTEit" FontSize="28" FontWeight="SemiBold" Foreground="{DynamicResource BrushHighlight}" />
+                  <TextBlock Classes="accent" FontWeight="SemiBold" Text="{Binding VersionText}" />
+                  <TextBlock Classes="accent" Margin="0,6,0,0" Text="{Binding [LicenseLine], Source={x:Static ui:Tr.I}}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+              <Button Command="{Binding OpenLicensesCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource IconLicense}" />
+                  <TextBlock Text="{Binding [BtnLicenses], Source={x:Static ui:Tr.I}}" />
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding OpenWebsiteCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource IconWeb}" />
+                  <TextBlock Text="{Binding [BtnWebsite], Source={x:Static ui:Tr.I}}" />
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding OpenGitHubCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource IconGithub}" />
+                  <TextBlock Text="{Binding [BtnGitHub], Source={x:Static ui:Tr.I}}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+
+            <Border Classes="card">
+              <StackPanel Spacing="6" HorizontalAlignment="Center">
+                <TextBlock Classes="section" Margin="0" HorizontalAlignment="Center" TextAlignment="Center"
+                           Text="{Binding [ThirdParty], Source={x:Static ui:Tr.I}}" />
+                <TextBlock Classes="muted" FontSize="14" HorizontalAlignment="Center" TextAlignment="Center"
+                           Text="{Binding [ThirdPartyList], Source={x:Static ui:Tr.I}}" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+        </Panel>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</Window>

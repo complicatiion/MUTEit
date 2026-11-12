@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Platform-neutral logic: settings, hotkey model and matching, mute modes, accent rules, IPC contract, strings, update check. No package references. -->
+  <PropertyGroup>
+    <RootNamespace>MUTEit.Core</RootNamespace>
+    <AssemblyName>MUTEit.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MUTEit.Core.Tests" />
+  </ItemGroup>
+
+</Project>

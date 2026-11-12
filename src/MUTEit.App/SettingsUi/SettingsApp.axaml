@@ -1,0 +1,48 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MUTEit.App.SettingsUi.SettingsApp"
+             Name="MUTEit"
+             RequestedThemeVariant="Dark">
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://MUTEit/Theme/Colors.axaml" />
+        <ResourceInclude Source="avares://MUTEit/Theme/Icons.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <!-- Accent instead of system blue: switches, radio buttons, check marks, sliders, selection, focus.
+             The accent itself is set from code (ThemeManager): Teal or the Windows accent. -->
+        <ColorPaletteResources x:Key="Dark"
+                               Accent="#FF4FD1C5"
+                               RegionColor="#FF1A1D23"
+                               AltHigh="#FF1A1D23"
+                               ListLow="#FF2A2F38"
+                               ListMedium="#FF343A45"
+                               ChromeMediumLow="#FF22262E"
+                               ChromeMedium="#FF2A2F38"
+                               ChromeLow="#FF15181D"
+                               ChromeAltLow="#FFECEFF4"
+                               BaseHigh="#FFECEFF4" />
+        <ColorPaletteResources x:Key="Light"
+                               Accent="#FF0F766E"
+                               RegionColor="#FFF3F4F6"
+                               AltHigh="#FFFFFFFF"
+                               ListLow="#FFF7F8FA"
+                               ListMedium="#FFE4E7EB"
+                               ChromeMediumLow="#FFFFFFFF"
+                               ChromeMedium="#FFF7F8FA"
+                               ChromeLow="#FFEBEDF0"
+                               ChromeAltLow="#FF1A1D23"
+                               BaseHigh="#FF1A1D23" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+    <StyleInclude Source="avares://MUTEit/Theme/Styles.axaml" />
+  </Application.Styles>
+
+</Application>
